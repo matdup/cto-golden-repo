@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    tenantQuotas:
+      headers:
+        customRequestHeaders:
+          X-Tenant-Quota: "default"

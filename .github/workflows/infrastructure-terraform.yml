@@ -1,0 +1,157 @@
+# =========================
+# infrastructure-terraform.yml
+# =========================
+name: 🟧 Infrastructure (Terraform) CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/infrastructure/terraform/**"
+      - ".github/workflows/infrastructure-terraform.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "apps/infrastructure/terraform/**"
+      - ".github/workflows/infrastructure-terraform.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-terraform-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_DIR: apps/infrastructure/terraform
+  TF_VERSION: "1.6.6"
+
+jobs:
+  validate:
+    name: 🔍 fmt/validate/tflint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ${{ env.TF_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.53.2
+
+      - name: 🎨 terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: 📦 terraform init (no backend)
+        run: terraform init -backend=false
+
+      - name: ✅ terraform validate
+        run: terraform validate
+
+      - name: 🔧 tflint
+        run: |
+          tflint --init
+          tflint
+
+  security:
+    name: 🛡️ tfsec (SARIF)
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      contents: read
+      security-events: write
+    defaults:
+      run:
+        working-directory: ${{ env.TF_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🏗️ tfsec
+        uses: aquasecurity/tfsec-action@v1.3.0
+        with:
+          working_directory: ${{ env.TF_DIR }}
+          soft_fail: false
+          format: sarif
+          output: tfsec-results.sarif
+
+      - name: ⚠️ Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: tfsec-results.sarif
+
+  plan:
+    name: 📋 Plan (main only, gated)
+    runs-on: ubuntu-latest
+    needs: [validate, security]
+    if: github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: ${{ env.TF_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: ✅ Preflight secrets (OVH)
+        run: |
+          set -e
+          test -n "${{ secrets.OVH_PROJECT_ID }}" || (echo "Missing secret: OVH_PROJECT_ID" && exit 1)
+          test -n "${{ secrets.OVH_ENDPOINT }}" || (echo "Missing secret: OVH_ENDPOINT" && exit 1)
+          test -n "${{ secrets.OVH_APPLICATION_KEY }}" || (echo "Missing secret: OVH_APPLICATION_KEY" && exit 1)
+          test -n "${{ secrets.OVH_APPLICATION_SECRET }}" || (echo "Missing secret: OVH_APPLICATION_SECRET" && exit 1)
+          test -n "${{ secrets.OVH_CONSUMER_KEY }}" || (echo "Missing secret: OVH_CONSUMER_KEY" && exit 1)
+
+      - name: 📦 terraform init (backend from secret)
+        env:
+          TF_IN_AUTOMATION: "true"
+          TF_INPUT: "false"
+          TF_VAR_ovh_project_id: ${{ secrets.OVH_PROJECT_ID }}
+          OVH_ENDPOINT: ${{ secrets.OVH_ENDPOINT }}
+          OVH_APPLICATION_KEY: ${{ secrets.OVH_APPLICATION_KEY }}
+          OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
+          OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
+        run: |
+          echo "${{ secrets.OVH_TERRAFORM_BACKEND }}" > backend.tfvars
+          terraform init -backend-config=backend.tfvars
+
+      - name: 📋 terraform plan + block destroy
+        env:
+          TF_IN_AUTOMATION: "true"
+          TF_INPUT: "false"
+          TF_VAR_ovh_project_id: ${{ secrets.OVH_PROJECT_ID }}
+          OVH_ENDPOINT: ${{ secrets.OVH_ENDPOINT }}
+          OVH_APPLICATION_KEY: ${{ secrets.OVH_APPLICATION_KEY }}
+          OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
+          OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
+        run: |
+          terraform plan -no-color -out=tfplan
+          terraform show -json tfplan > tfplan.json
+
+          python - << 'PY'
+          import json, sys
+          j=json.load(open("tfplan.json"))
+          destroy=0
+          for rc in j.get("resource_changes",[]):
+              actions=rc.get("change",{}).get("actions",[])
+              if "delete" in actions:
+                  destroy += 1
+          if destroy:
+              print(f"❌ Blocking: {destroy} destroy action(s) detected.")
+              sys.exit(1)
+          print("✅ No destroy actions detected.")
+          PY
+
+      - name: 📤 Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.sha }}
+          path: |
+            ${{ env.TF_DIR }}/tfplan
+            ${{ env.TF_DIR }}/tfplan.json

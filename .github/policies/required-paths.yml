@@ -1,0 +1,13 @@
+required:
+  - "apps/backend"
+  - "apps/frontend"
+  - "apps/infrastructure"
+  - "contracts/openapi/v1"
+  - "contracts/schemas"
+  - "docs"
+  - "platform"
+  - "scripts"
+  - "governance"
+  - "ops-runbooks"
+  - "product"
+  - ".github/workflows"

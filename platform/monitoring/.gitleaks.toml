@@ -1,0 +1,97 @@
+title = "Tech Factory Security Rules"
+version = "2.1.0"
+
+# -------------------------
+# High-signal secret rules
+# -------------------------
+
+[[rules]]
+id = "aws-access-key-id"
+description = "AWS Access Key ID"
+regex = '''\b(A3T[A-Z0-9]{16}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|AROA[0-9A-Z]{16})\b'''
+tags = ["key", "AWS"]
+
+[[rules]]
+id = "aws-secret-access-key"
+description = "AWS Secret Access Key (contextual)"
+regex = '''(?i)\b(aws_secret_access_key|secret_access_key)\b\s*[:=]\s*['"]?[0-9a-zA-Z\/+=]{40}['"]?'''
+tags = ["key", "AWS"]
+
+[[rules]]
+id = "github-pat-classic"
+description = "GitHub PAT (classic)"
+regex = '''\bghp_[0-9A-Za-z]{36}\b'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "github-pat-finegrained"
+description = "GitHub PAT (fine-grained)"
+regex = '''\bgithub_pat_[0-9A-Za-z_]{22,}\b'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Incoming Webhook"
+regex = '''https:\/\/hooks\.slack\.com\/services\/[A-Z0-9]{9,}\/[A-Z0-9]{9,}\/[A-Za-z0-9]{20,}'''
+tags = ["key", "Slack"]
+
+[[rules]]
+id = "private-key-block"
+description = "Private Key Block (RSA/EC/OPENSSH)"
+regex = '''-----BEGIN (OPENSSH PRIVATE KEY|RSA PRIVATE KEY|EC PRIVATE KEY)-----'''
+tags = ["key", "SSH"]
+
+[[rules]]
+id = "jwt-like"
+description = "JWT token (3 segments, JWT-like)"
+regex = '''\beyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b'''
+tags = ["key", "JWT"]
+
+[[rules]]
+id = "ovh-app-key"
+description = "OVH Application Key (contextual)"
+regex = '''(?i)\b(ovh_)?application_key\b\s*[:=]\s*['"]?[0-9a-zA-Z]{16,}['"]?'''
+tags = ["key", "OVH"]
+
+[[rules]]
+id = "ovh-app-secret"
+description = "OVH Application Secret (contextual)"
+regex = '''(?i)\b(ovh_)?application_secret\b\s*[:=]\s*['"]?[0-9a-zA-Z]{20,}['"]?'''
+tags = ["key", "OVH"]
+
+[[rules]]
+id = "ovh-consumer-key"
+description = "OVH Consumer Key (contextual)"
+regex = '''(?i)\b(ovh_)?consumer_key\b\s*[:=]\s*['"]?[0-9a-zA-Z]{20,}['"]?'''
+tags = ["key", "OVH"]
+
+[[rules]]
+id = "db-connection-string"
+description = "Database connection string (basic)"
+regex = '''\b(postgres|mysql|mongodb):\/\/[^:\s]+:[^@\s]+@[^:\s]+:\d+\/[^\s'"]+'''
+tags = ["key", "database"]
+
+# -------------------------
+# Allowlist (safe + narrow)
+# -------------------------
+[allowlist]
+description = "Allow known non-secret patterns and test fixtures only"
+paths = [
+  "**/*_test.go",
+  "**/test/**",
+  "**/tests/**",
+  "**/fixtures/**",
+  "**/examples/**",
+  "**/docs/examples/**"
+]
+
+# These stopwords reduce false positives in demo placeholders.
+stopwords = [
+  "changeme",
+  "change_this_password",
+  "example",
+  "dummy",
+  "not_a_real_key",
+  "your_secure_password",
+  "your-monitoring-domain.com"
+]

@@ -1,0 +1,37 @@
+
+## 🔒 **TERRAFORM.TFVARS.EXAMPLE**
+
+```hcl
+# terraform/terraform.tfvars.example
+
+# 🔐 Configuration OVH (OBLIGATOIRE)
+ovh_project_id = "your_ovh_project_id_here"
+
+# 🌍 Environnement
+environment = "staging"
+region      = "GRA"
+
+# 🏷️ Identification  
+project_name = "techfactory"
+infrastructure_version = "1.0.0"
+
+# 🔐 Security (To adjust for production)
+ssh_allowed_cidr = "123.456.789.0/32"  # Replace by your IP
+monitoring_allowed_cidr = "10.42.0.0/24"
+
+# 🌐 Network
+vlan_id = 42
+private_subnet_cidr = "10.42.0.0/24"
+
+# 🖥️ Resources
+instance_flavor = "d2-2"
+database_plan = "essential"
+database_flavor = "db1-4"
+
+# 📧 Notifications
+admin_email = "admin@yourcompany.com"
+domain_name = "your-app.com"
+
+# 🐳 Container
+docker_registry = "ghcr.io"
+enable_monitoring = true

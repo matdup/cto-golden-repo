@@ -1,0 +1,60 @@
+# =========================
+# security-suite.yml
+# =========================
+name: 🛡️ Security Suite (Monorepo)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "0 6 * * 1" # Monday 06:00 UTC
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-suite-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TRIVY_SEVERITY: CRITICAL,HIGH,MEDIUM
+
+jobs:
+  secrets:
+    name: 🕵️ Secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🕵️ Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --verbose --redact --exit-code 1
+
+  repo-scan:
+    name: 🛡️ Trivy FS (SARIF)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🛡️ Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.21.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: 1
+
+      - name: ⚠️ Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs.sarif

@@ -1,0 +1,15 @@
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/apps/frontend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "gomod"
+    directory: "/apps/backend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "terraform"
+    directory: "/apps/infrastructure/terraform"
+    schedule:
+      interval: "weekly"

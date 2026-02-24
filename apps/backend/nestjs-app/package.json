@@ -1,0 +1,9 @@
+{
+  "name": "nestjs-app",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "start": "node dist/main.js",
+    "build": "echo \"TODO: initialize NestJS build\""
+  }
+}

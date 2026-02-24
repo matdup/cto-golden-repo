@@ -1,0 +1,48 @@
+title = "Tech Factory Security Rules"
+version = "2.0.0"
+
+[[rules]]
+description = "AWS Access Key"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "AWS Secret Key"
+regex = '''(?i)aws(.{0,20})?['\"][0-9a-zA-Z\/+]{40}['\"]'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+description = "SSH Private Key"
+regex = '''-----BEGIN OPENSSH PRIVATE KEY-----'''
+tags = ["key", "SSH"]
+
+[[rules]]
+description = "JWT Token"
+regex = '''eyJ[a-zA-Z0-9]{10,}\.eyJ[a-zA-Z0-9]{10,}\.[a-zA-Z0-9_-]{10,}'''
+tags = ["key", "JWT"]
+
+[[rules]]
+description = "OVH Credentials"
+regex = '''(?i)ovh(.{0,20})?['\"][0-9a-zA-Z]{32,}['\"]'''
+tags = ["key", "OVH"]
+
+[[rules]]
+description = "Database Connection String"
+regex = '''(postgres|mysql|mongodb)://[a-zA-Z0-9_]+:[a-zA-Z0-9_]+@[a-zA-Z0-9.-]+:[0-9]+/[a-zA-Z0-9_]+'''
+tags = ["key", "database"]
+
+# Exclusions pour les fichiers de test et documentation
+[allowlist]
+description = "Allow test files and documentation"
+paths = [
+  "**/*_test.go",
+  "**/test/**",
+  "**/docs/**",
+  "**/README.md",
+  "**/.github/**"
+]

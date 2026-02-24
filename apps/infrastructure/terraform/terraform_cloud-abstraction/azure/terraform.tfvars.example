@@ -1,0 +1,34 @@
+# terraform/terraform.tfvars.example - AZURE VERSION
+
+# 🔐 Configuration Azure (REQUIRED - via environment variables)
+# ARM_CLIENT_ID = "your_azure_client_id"
+# ARM_CLIENT_SECRET = "your_azure_client_secret" 
+# ARM_SUBSCRIPTION_ID = "your_azure_subscription_id"
+# ARM_TENANT_ID = "your_azure_tenant_id"
+
+# 🌍 Environment
+environment = "staging"
+region      = "West Europe"
+
+# 🏷️ Identification  
+project_name = "techfactory"
+infrastructure_version = "1.0.0"
+
+# 🔐 Security (To adjust for production)
+ssh_allowed_cidr = "123.456.789.0/32"  # Replace by your IP
+monitoring_allowed_cidr = "10.0.0.0/16"
+
+# 🌐 Network
+private_subnet_cidr = "10.0.1.0/24"
+
+# 🖥️ Resources
+instance_flavor = "Standard_B2s"
+database_flavor = "B_Standard_B1ms"
+
+# 📧 Notifications
+admin_email = "admin@yourcompany.com"
+domain_name = "your-app.com"
+
+# 🐳 Container
+docker_registry = "ghcr.io"
+enable_monitoring = true
