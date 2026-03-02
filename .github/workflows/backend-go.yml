@@ -84,7 +84,7 @@ jobs:
 
       - name: 📊 Upload coverage
         if: hashFiles(format('{0}/coverage.out', env.APP_DIR)) != ''
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ${{ env.APP_DIR }}/coverage.out
 
