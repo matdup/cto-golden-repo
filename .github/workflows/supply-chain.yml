@@ -43,6 +43,6 @@ jobs:
           path: sbom-repo.spdx.json
 
       - name: 🧾 Attest SBOM
-        uses: actions/attest-sbom@v1
+        uses: actions/attest-sbom@v4
         with:
           subject-path: sbom-repo.spdx.json
