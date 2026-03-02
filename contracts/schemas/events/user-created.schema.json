@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UserCreatedEvent",
+  "type": "object",
+  "required": ["eventId", "type", "occurredAt", "payload"],
+  "properties": {
+    "eventId": { "type": "string" },
+    "type": { "const": "user.created" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["userId", "email"],
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" }
+      }
+    }
+  }
+}

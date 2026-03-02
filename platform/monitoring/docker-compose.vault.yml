@@ -1,0 +1,26 @@
+version: "3.8"
+
+volumes:
+  vault_data:
+
+services:
+  vault:
+    image: hashicorp/vault:1.16.0
+    container_name: vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-root-token}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/file
+      - ./vault/policies:/policies:ro
+    command: ["server", "-dev", "-dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-root-token}"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8200/v1/sys/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 15

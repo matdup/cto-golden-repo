@@ -1,0 +1,14 @@
+# Go service
+.git
+.github
+**/.env
+**/.env.*
+**/*.log
+**/node_modules
+**/dist
+**/build
+**/.DS_Store
+**/Thumbs.db
+
+# Go build cache (if ever copied)
+**/.cache

@@ -1,0 +1,166 @@
+version: "3.8"
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  alertmanager_data:
+  uptime_kuma_data:
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: prometheus
+    user: "65534:65534"
+    ports:
+      - "9090:9090"
+    command: ["/bin/sh", "/entrypoint.sh"]
+    environment:
+      PROMETHEUS_RETENTION: ${PROMETHEUS_RETENTION:-30d}
+      PROMETHEUS_ENABLE_LIFECYCLE: ${PROMETHEUS_ENABLE_LIFECYCLE:-false}
+      PROMETHEUS_ENABLE_ADMIN_API: ${PROMETHEUS_ENABLE_ADMIN_API:-false}
+    volumes:
+      - ./prometheus/entrypoint.sh:/entrypoint.sh:ro
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerting.yml:/etc/prometheus/alerting.yml:ro
+      - ./prometheus/targets/:/etc/prometheus/targets/:ro
+      - prometheus_data:/prometheus
+    networks: [monitoring]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: ["ALL"]
+
+  grafana:
+    image: grafana/grafana:10.4.5
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_SECRET_KEY: ${GRAFANA_SECRET_KEY:-change_me_32chars_min}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/:ro
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/:ro
+    networks: [monitoring]
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: ["-config.file=/etc/loki/loki-config.yml"]
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    networks: [monitoring]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+    cap_drop: ["ALL"]
+
+  promtail:
+    image: grafana/promtail:2.9.8
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+    command: ["-config.file=/etc/promtail/config.yml"]
+    networks: [monitoring]
+    restart: unless-stopped
+    depends_on:
+      loki:
+        condition: service_started
+    cap_drop: ["ALL"]
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    environment:
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      ALERTS_SLACK_CHANNEL: ${ALERTS_SLACK_CHANNEL:-#alerts}
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.external-url=${ALERTMANAGER_EXTERNAL_URL:-http://localhost:9093}"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks: [monitoring]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9093/-/ready"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+    cap_drop: ["ALL"]
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks: [monitoring]
+    restart: unless-stopped
+    cap_drop: ["ALL"]
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox-exporter
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./prometheus/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - "--config.file=/etc/blackbox_exporter/config.yml"
+    networks: [monitoring]
+    restart: unless-stopped
+    cap_drop: ["ALL"]
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.23.13
+    container_name: uptime-kuma
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks: [monitoring]
+    restart: unless-stopped

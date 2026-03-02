@@ -1,0 +1,112 @@
+site_name: Golden Repo — Documentation
+site_description: Enterprise-grade technical documentation (architecture, runbooks, contracts, ADRs)
+site_author: CTO Office
+site_url: ""
+
+repo_name: GitHub
+repo_url: ""
+edit_uri: "edit/main/docs/"
+
+docs_dir: content
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.top
+    - navigation.footer
+    - content.action.edit
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      check_paths: true
+
+plugins:
+  - search
+  - tags
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+  - git-authors
+
+# Fail fast in CI if links are broken or nav is wrong
+validation:
+  nav:
+    omitted_files: warn
+    not_found: error
+  links:
+    not_found: error
+    anchors: warn
+
+nav:
+  - Home: README.md
+  - Starter:
+      - Getting started: _starter/index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Decisions: architecture/decisions.md
+      - Edge: architecture/edge.md
+      - SLO: architecture/slo.md
+      - Audit logging: architecture/audit-logging.md
+      - Multi-tenancy: architecture/multi-tenancy.md
+      - Roadmap: architecture/roadmap.md
+      - Index: architecture/README.md
+  - API (Contracts):
+      - API Index: api/README.md
+      - Frontend API: api/frontend-api.md
+      - Backend Node API: api/backend-node-api.md
+  - Guides:
+      - Guides index: guides/index.md
+      - Getting started: guides/getting-started.md
+      - Multi-cloud setup: guides/multi-cloud-setup.md
+      - Release safety: guides/release-safety.md
+      - Security best practices: guides/security-best-practices.md
+      - CI/CD handbook: guides/handbook.md
+  - Tech runbooks:
+      - Runbooks index: tech-runbooks/README.md
+      - Deployment: tech-runbooks/deployment.md
+      - Monitoring: tech-runbooks/monitoring.md
+      - Alerts: tech-runbooks/alerts.md
+      - Migrations: tech-runbooks/migrations.md
+      - Restore test: tech-runbooks/restore-test.md
+      - Disaster recovery: tech-runbooks/disaster-recovery.md
+      - Rollback: tech-runbooks/rollback.md
+      - Troubleshooting: tech-runbooks/troubleshooting.md
+  - ADRs:
+      - ADR Index: ../adr/README.md
+      - 001 Monolith first: ../adr/001-monolith-first.md
+      - 002 Multi-cloud strategy: ../adr/002-multi-cloud-strategy.md
+      - 003 Auth solution: ../adr/003-auth-solution.md

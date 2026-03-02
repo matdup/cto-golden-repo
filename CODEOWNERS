@@ -1,0 +1,21 @@
+# -----------------------------------------------------------------------------
+# Mandatory ownership mapping
+# At least 1 owner per strategic domain
+# -----------------------------------------------------------------------------
+
+/apps/frontend/              @your-github-handle
+/apps/backend/               @your-github-handle
+/infrastructure/             @your-github-handle
+/platform/                   @your-github-handle
+/contracts/                  @your-github-handle
+/docs/                       @your-github-handle
+/governance/                 @your-github-handle
+/ops-runbooks/               @your-github-handle
+/product/                    @your-github-handle
+/.github/                    @your-github-handle
+/scripts/                    @your-github-handle
+
+# Root governance files require review
+/README.md                   @your-github-handle
+/SECURITY.md                 @your-github-handle
+/DECISIONS.md                @your-github-handle

@@ -1,0 +1,40 @@
+# ============================================================
+# 🎯 TECHFACTORY MULTI-CLOUD CONFIGURATION EXAMPLE
+# ============================================================
+
+# 🌍 CLOUD SELECTION (Choose ONE)
+cloud_provider = "ovh"  # "ovh", "aws", or "azure"
+
+# 🏢 CORE CONFIGURATION
+project_name          = "techfactory"
+environment           = "staging"
+infrastructure_version = "1.0.0"
+
+# 🌐 NETWORK CONFIGURATION
+region              = "default" # Will be set per cloud
+private_subnet_cidr = "10.42.0.0/24"
+
+# 🔐 SECURITY CONFIGURATION  
+ssh_allowed_cidr     = "123.456.789.0/32"  # Your IP address
+monitoring_allowed_cidr = "10.42.0.0/24"
+
+# 🖥️ COMPUTE CONFIGURATION
+instance_flavor = "default" # Will be set per cloud
+
+# 🗄️ DATABASE CONFIGURATION
+database_flavor = "default" # Will be set per cloud
+
+# 📱 APPLICATION CONFIGURATION
+admin_email       = "admin@yourcompany.com"
+domain_name       = "your-app.com"
+docker_registry   = "ghcr.io"
+enable_monitoring = true
+
+# ☁️ CLOUD-SPECIFIC CONFIGURATION
+
+# For OVH:
+ovh_project_id = "your_ovh_project_id_here"
+vlan_id        = 42
+
+# For AWS: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables
+# For Azure: Set ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_SUBSCRIPTION_ID, ARM_TENANT_ID environment variables

@@ -1,0 +1,28 @@
+name: ✅ CI (Dispatcher)
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: 🧱 Repo structure gate
+    uses: ./.github/workflows/policy.yml
+
+  security:
+    name: 🛡️ Security suite
+    needs: policy
+    uses: ./.github/workflows/security-suite.yml
+
+  contracts:
+    name: 📜 Contract tests
+    needs: policy
+    uses: ./.github/workflows/contract-tests.yml

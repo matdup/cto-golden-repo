@@ -1,0 +1,44 @@
+name: 📊 Monitoring Stack CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "platform/monitoring/**"
+      - ".github/workflows/monitoring-stack.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "platform/monitoring/**"
+      - ".github/workflows/monitoring-stack.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitoring-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MON_DIR: platform/monitoring/monitoring-template
+
+jobs:
+  validate:
+    name: 🔍 Validate compose + scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ✅ Docker Compose config check
+        run: |
+          set -euo pipefail
+          docker compose -f "${{ env.MON_DIR }}/docker-compose.monitoring.yml" config > /dev/null
+          docker compose -f "${{ env.MON_DIR }}/docker-compose.vault.yml" config > /dev/null
+
+      - name: 🛡️ Secrets Scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --verbose --redact --exit-code 1 --config=${{ env.MON_DIR }}/.gitleaks.toml

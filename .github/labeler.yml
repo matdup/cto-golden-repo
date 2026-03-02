@@ -1,0 +1,31 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: "apps/frontend/**"
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file: "apps/backend/**"
+
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file: "apps/infrastructure/**"
+
+platform:
+  - changed-files:
+      - any-glob-to-any-file: "platform/**"
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: "docs/**"
+
+contracts:
+  - changed-files:
+      - any-glob-to-any-file: "contracts/**"
+
+governance:
+  - changed-files:
+      - any-glob-to-any-file: "governance/**"
+
+ops:
+  - changed-files:
+      - any-glob-to-any-file: "ops-runbooks/**"
