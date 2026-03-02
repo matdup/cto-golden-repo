@@ -1,0 +1,61 @@
+title = "CTO Golden Repo Security Rules"
+version = "2.1.0"
+
+[[rules]]
+description = "AWS Access Key"
+regex = '''(A3T[A-Z0-9]|AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA)[A-Z0-9]{16}'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "AWS Secret Key"
+regex = '''(?i)aws(.{0,32})?['\"][0-9a-zA-Z\/+]{40}['\"]'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+description = "GitHub Fine-grained PAT"
+regex = '''github_pat_[0-9a-zA-Z_]{20,}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+description = "SSH Private Key"
+regex = '''-----BEGIN (OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'''
+tags = ["key", "SSH"]
+
+[[rules]]
+description = "JWT Token"
+regex = '''eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'''
+tags = ["key", "JWT"]
+
+[[rules]]
+description = "OVH Credentials"
+regex = '''(?i)ovh(.{0,32})?['\"][0-9a-zA-Z]{32,}['\"]'''
+tags = ["key", "OVH"]
+
+[[rules]]
+description = "Database Connection String"
+regex = '''(postgres|postgresql|mysql|mongodb)://[^\s'"]+'''
+tags = ["key", "database"]
+
+[[rules]]
+description = "Private RSA Key"
+regex = '''-----BEGIN RSA PRIVATE KEY-----'''
+tags = ["key", "RSA"]
+
+[allowlist]
+description = "Allow non-secret examples & docs"
+paths = [
+  "**/*_test.*",
+  "**/test/**",
+  "**/tests/**",
+  "**/docs/**",
+  "**/README.md",
+  "**/.github/**",
+  "**/*.example",
+  "**/*.example.*",
+  "**/*.md"
+]

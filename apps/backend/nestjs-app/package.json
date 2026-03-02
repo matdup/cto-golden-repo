@@ -1,0 +1,17 @@
+{
+  "name": "nestjs-app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Default backend (modular monolith) for the Golden Repo",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "node dist/main.js",
+    "start:dev": "node --watch src/main.ts",
+    "build": "echo \"TODO: replace with Nest build when dependencies are wired\"",
+    "lint": "echo \"TODO: add eslint\"",
+    "test": "echo \"TODO: add tests\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

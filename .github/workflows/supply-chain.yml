@@ -1,0 +1,48 @@
+name: 🧬 Supply Chain (SBOM + Provenance)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: supply-chain-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sbom:
+    name: 📦 Generate SBOM + Attest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🛡️ Secrets Scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --verbose --redact --exit-code 1 --config=.gitleaks.toml
+
+      - name: 📦 Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          output-file: sbom-repo.spdx.json
+
+      - name: 📤 Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-repo-${{ github.sha }}
+          path: sbom-repo.spdx.json
+
+      - name: 🧾 Attest SBOM
+        uses: actions/attest-sbom@v1
+        with:
+          subject-path: sbom-repo.spdx.json

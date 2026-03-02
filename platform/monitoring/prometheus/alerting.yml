@@ -1,0 +1,38 @@
+groups:
+  - name: infrastructure
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+          owner: platform
+          runbook_url: platform/monitoring/runbooks/README.md
+          service: infrastructure
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "Target has been down for more than 5 minutes."
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          owner: platform
+          runbook_url: platform/monitoring/runbooks/README.md
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage > 80% for 10 minutes."
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          owner: platform
+          runbook_url: platform/monitoring/runbooks/README.md
+          service: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage > 90% for 10 minutes."

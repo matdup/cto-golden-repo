@@ -1,0 +1,46 @@
+name: 📚 Docs (MkDocs) CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "docs/**"
+      - "contracts/**"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "docs/**"
+      - "contracts/**"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 🏗️ Build docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 📦 Install deps
+        run: |
+          set -euo pipefail
+          pip install --upgrade pip
+          pip install mkdocs-material
+
+      - name: ✅ mkdocs build (strict)
+        run: |
+          set -euo pipefail
+          mkdocs build -f docs/mkdocs.yml --strict

@@ -1,0 +1,18 @@
+output:
+  - format: spdx-json
+
+catalogers:
+  enabled:
+    - apk-db
+    - dpkg-db
+    - rpm-db
+    - go-module
+    - npm-package
+    - python-package
+
+exclude:
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/dist/**"
+  - "**/build/**"

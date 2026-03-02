@@ -1,0 +1,5 @@
+- targets: ["app-server:8080"]
+  labels:
+    job: app_metrics
+    service: app
+    environment: local

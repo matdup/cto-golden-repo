@@ -1,0 +1,57 @@
+name: 📜 Contracts (Validate)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "contracts/**"
+      - ".github/workflows/contract-tests.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "contracts/**"
+      - ".github/workflows/contract-tests.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 📦 Install validators
+        run: |
+          set -euo pipefail
+          npm i -g @redocly/cli ajv-cli
+
+      - name: ✅ Validate OpenAPI (v1)
+        run: |
+          set -euo pipefail
+          if [ -d "contracts/openapi/v1" ]; then
+            for f in contracts/openapi/v1/*.yaml contracts/openapi/v1/*.yml; do
+              [ -f "$f" ] || continue
+              echo "Linting $f"
+              redocly lint "$f"
+            done
+          fi
+
+      - name: ✅ Validate JSON Schemas
+        run: |
+          set -euo pipefail
+          if [ -d "contracts/schemas" ]; then
+            find contracts/schemas -type f -name "*.json" -print0 | while IFS= read -r -d '' f; do
+              echo "Validating schema $f"
+              ajv validate -s "$f" --strict=false || exit 1
+            done
+          fi

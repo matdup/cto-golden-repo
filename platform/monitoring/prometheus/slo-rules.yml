@@ -1,0 +1,12 @@
+groups:
+  - name: slo_recording
+    rules:
+      - record: job:http_request_error_rate:5m
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m]))
+
+      - record: job:http_request_latency_p95:5m
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
