@@ -114,7 +114,7 @@ jobs:
 
       - name: 🛡️ Trivy image scan (SARIF)
         if: steps.docker.outputs.has_docker == 'true'
-        uses: aquasecurity/trivy-action@0.21.0
+        uses: aquasecurity/trivy-action@0.34.1
         with:
           image-ref: ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
           format: sarif
