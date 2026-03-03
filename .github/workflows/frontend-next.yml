@@ -146,7 +146,7 @@ jobs:
 
       - name: 📤 Upload SBOM artifact
         if: steps.docker.outputs.has_docker == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom-frontend-${{ github.sha }}
           path: sbom-frontend.spdx.json
